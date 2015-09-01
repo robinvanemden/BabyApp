@@ -13,13 +13,13 @@ You can download the latest version of the Android (APK) App here:
 
 https://github.com/robinvanemden/BabyApp/blob/master/app/app-release.apk?raw=true
 
-#Authors    
+# Developers    
 
 Johny Gorissen, johny.gorissen@hollandhaptics.com
 
 Robin van Emden, r.a.van.emden@vu.nl / robinvanemden@gmail.com
 
-#Attribution
+#Acknowledgements
 
 The BabyApp has been commisioned by Hans IJzerman of the VU University Amsterdam Emotion Regulation Lab as part of his research into Social Thermoregulatory patterns in mothers and newborns. Development by Johny Gorissen of Holland Haptics and Robin van Emden of the VU University Amsterdam Emotion Regulation Lab
 
