@@ -11,7 +11,7 @@ Consequently, the app will send or upload the recorded audio files to a predefin
 
 You can download the latest version of the Android (APK) App here:
 
-https://github.com/robinvanemden/BabyApp/blob/master/app/app-release.apk?raw=true
+https://github.com/robinvanemden/BabyApp/raw/master/app/babyApp.apk
 
 # Developers    
 
