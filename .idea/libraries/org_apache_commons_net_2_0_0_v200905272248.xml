@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="org.apache.commons.net_2.0.0.v200905272248">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/app/libs/org.apache.commons.net_2.0.0.v200905272248.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

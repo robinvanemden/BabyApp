@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Baby App</string>
+    <string name="title_activity_main">MainActivity</string>
+
+    <string name="mysql_url">http://www.robinvanemden.dds.nl/sqlitemysqlsync/insertdata.php</string>
+    <string name="file_upload_url">http://www.robinvanemden.dds.nl/fileupload/upload.php</string>
+
+    <string name="toast_upload_failed">File Upload Failed.</string>
+    <string name="toast_malformedurlexception">MalformedURLException</string>
+    <string name="toast_exception">Unknown Exception</string>
+
+    <string name="scan">SCAN</string>
+    <string name="scanning">SCANNING...</string>
+    <string name="disconnect">DISCONNECT</string>
+    <string name="device_name">Device Name</string>
+
+</resources>
