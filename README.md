@@ -15,7 +15,7 @@ https://github.com/robinvanemden/BabyApp/raw/master/app/babyApp.apk
 
 # Developers    
 
-Robin van Emden, robin@pwy.nl
+Robin van Emden, http://pavlov.tech robin@pwy.nl
 
 Johny Gorissen, https://www.linkedin.com/in/johny-gorissen-807683b
 
