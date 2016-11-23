@@ -15,9 +15,9 @@ https://github.com/robinvanemden/BabyApp/raw/master/app/babyApp.apk
 
 # Developers    
 
-Johny Gorissen, johny.gorissen@hollandhaptics.com
+Robin van Emden, robin@pwy.nl
 
-Robin van Emden, r.a.van.emden@vu.nl / robinvanemden@gmail.com
+Johny Gorissen
 
 #Acknowledgements
 
@@ -25,11 +25,11 @@ The BabyApp has been commisioned by Hans IJzerman of the VU University Amsterdam
 
 Amsterdam Emotion Regulation lab, http://emotionregulationlab.com/
 
+Robin van Emden, http://pavlov.tech/
+
 Hans IJzerman, https://sites.google.com/site/hijzerman/
 
 Holland Haptics, http://myfrebble.com/
-
-Robin van Emden, http://www.pavlov.io/
 
 Cor Wit Fonds, http://www.corwitfonds.nl/
 
