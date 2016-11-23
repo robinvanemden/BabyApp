@@ -17,7 +17,7 @@ https://github.com/robinvanemden/BabyApp/raw/master/app/babyApp.apk
 
 Robin van Emden, robin@pwy.nl
 
-Johny Gorissen
+Johny Gorissen, https://www.linkedin.com/in/johny-gorissen-807683b
 
 #Acknowledgements
 
