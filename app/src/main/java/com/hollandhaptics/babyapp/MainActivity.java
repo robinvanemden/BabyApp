@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
         startbabyService();
 
         if (GetRunningServices()) {
-            MainLB.setText("Service State: Running");
+            MainLB.setText(R.string.service_running);
         }
     }
 
@@ -74,12 +74,12 @@ public class MainActivity extends Activity {
     private void startbabyService() {
         // We are already running the babyapp service
         if (GetRunningServices()) {
-            MainLB.setText("Service State: Running");
+            MainLB.setText(R.string.service_running);
             return;
         }
         // Start the service
         startService(new Intent(this, BabyService.class));
-        MainLB.setText("Service State: Running");
+        MainLB.setText(R.string.service_running);
     }
 
     private boolean GetRunningServices() {

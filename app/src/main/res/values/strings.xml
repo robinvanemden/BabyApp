@@ -14,5 +14,6 @@
     <string name="scanning">SCANNING...</string>
     <string name="disconnect">DISCONNECT</string>
     <string name="device_name">Device Name</string>
+    <string name="service_running">Service State: Running</string>
 
 </resources>

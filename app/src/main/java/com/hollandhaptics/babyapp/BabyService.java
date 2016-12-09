@@ -58,7 +58,6 @@ public class BabyService extends Service {
     private static final double amplitude_threshold = 1000;             // the amplitude threshold (getAmplitude returns unsigned 16-bit integer values (0-32767))
     private static final int number_of_retries = 60;                    // the number of times to (re)try measuring an amplitude above the given threshold before stopping the recording and resetting the recorder
     private static final long service_runnable_interval = 1000;         // The interval in ms with which the runnable is called to check the volume.
-    private BabyServiceBinder binder;                                   // Binder for the service
     private Handler mhandler;                                           // Handlers for runnable
     private Runnable mrunnable;                                         // Runnable
     private MediaRecorder _recorder;                                    // MediaRecorder object
@@ -74,6 +73,7 @@ public class BabyService extends Service {
     /**
      * @brief Entry point of the Service.
      */
+    @SuppressLint("HardwareIds")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -285,8 +285,7 @@ public class BabyService extends Service {
      */
     @Override
     public IBinder onBind(Intent intent) {
-        binder = new BabyServiceBinder(this);
-        return binder;
+        return new BabyServiceBinder(this);
     }
 
     /**

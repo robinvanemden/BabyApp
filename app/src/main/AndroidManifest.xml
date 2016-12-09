@@ -3,20 +3,17 @@
     package="com.hollandhaptics.babyapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
-    <uses-permission android:name="android.permission.WRITE_OWNER_DATA" />
-    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
-    <uses-permission android:name="android.permission.MOUNT_FORMAT_FILESYSTEMS" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <permission
+        android:name="com.hollandhaptics.babyapp.permission.RESTART_RECEIVER"
+        android:protectionLevel="normal" />
+
+    <uses-permission
+        android:name="com.hollandhaptics.babyapp.permission.RESTART_RECEIVER" />
 
     <application
         android:allowBackup="true"
@@ -42,15 +39,19 @@
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.hollandhaptics.babyapp.RestartServiceReceiver">
+
+
+
+        <receiver android:name="com.hollandhaptics.babyapp.RestartServiceReceiver"
+            android:permission="com.hollandhaptics.babyapp.permission.RESTART_RECEIVER">
             <intent-filter>
-                <action android:name="YouWillNeverKillMe"></action>
+                <action android:name="YouWillNeverKillMe" />
             </intent-filter>
         </receiver>
 
         <service
             android:name="com.hollandhaptics.babyapp.BabyService"
-            android:enabled="true"></service>
+            android:enabled="true" />
 
     </application>
 
