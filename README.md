@@ -17,21 +17,21 @@ https://github.com/robinvanemden/BabyApp/raw/master/app/babyApp.apk
 
 Robin van Emden
 
-Johny Gorissen, https://www.linkedin.com/in/johny-gorissen-807683b
+Johny Gorissen
 
 #Acknowledgements
 
 The BabyApp has been commisioned by Hans IJzerman of the VU University Amsterdam Emotion Regulation Lab as part of his research into Social Thermoregulatory patterns in mothers and newborns. Development by Johny Gorissen of Holland Haptics and Robin van Emden of the VU University Amsterdam Emotion Regulation Lab
 
-Amsterdam Emotion Regulation lab, http://emotionregulationlab.com/
+Amsterdam Emotion Regulation lab
 
-Robin van Emden, http://pavlov.tech/
+Robin van Emden
 
-Hans IJzerman, https://sites.google.com/site/hijzerman/
+Hans IJzerman
 
-Holland Haptics, http://myfrebble.com/
+Holland Haptics
 
-Cor Wit Fonds, http://www.corwitfonds.nl/
+Cor Wit Fonds
 
 #License 
 
