@@ -69,9 +69,13 @@ avoids triggering the Play Store's wakelock policy.
 
 Foreground services are automatically exempt from Doze for the work they
 do; the recording loop is unaffected. For network uploads during Doze,
-the "Disable battery optimization" button in `MainActivity` deep-links
-the user to `Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS`, where
-they can opt the whole app out of background restrictions.
+the "Disable battery optimization" button in `MainActivity` fires
+`Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` with a `package:`
+URI. That opens the system dialog *"Let app always run in background?"*
+with Baby App named explicitly, so a single Allow tap whitelists it.
+(The alternative `ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS` opens a
+list that on most devices defaults to "Not optimized" apps, hiding the
+app behind a filter dropdown — bad UX, hence not used.)
 
 **6. Boot resumption (`BootReceiver`)**
 
@@ -109,12 +113,78 @@ apps rejected from the Play Store:
 - **User taps "Force stop"** in system Settings. `START_STICKY` is
   intentionally not honoured after this.
 - **User toggles "Don't allow background activity"** for the app.
-- **Aggressive OEM task killers** on some Chinese OEM ROMs
-  (Xiaomi MIUI, Huawei EMUI, OPPO ColorOS) ignore Android's FGS contract
-  entirely. There is no portable workaround beyond asking the user to
-  whitelist the app on those vendors' settings.
+- **Aggressive OEM task killers** on Xiaomi MIUI, Huawei EMUI,
+  OPPO ColorOS, OnePlus, and several Samsung modes ignore Android's
+  FGS contract entirely. There is no portable workaround beyond
+  asking the user to whitelist the app on those vendors' settings.
+  See [dontkillmyapp.com](https://dontkillmyapp.com/) for the
+  per-OEM instructions.
+- **Battery saver mode** (manual or automatic) further restricts
+  background CPU and network. The FGS keeps recording; uploads may
+  stall until charging or until the user disables battery saver.
+- **Work-profile / managed-device policies** can be set by an MDM
+  admin to prevent FGS or background activity entirely.
 - **Disk full** — the recording loop pauses uploads when free space drops
   below 10 % until cleanup catches up.
+
+## Distribution: sideloaded vs. Google Play
+
+The release APKs are **debug-signed and intended for sideloading**, not
+for the Play Store. The two distribution channels have different
+constraints, and the design reflects that.
+
+**Will the always-running mechanism work if you sideload?** Yes,
+exactly as documented above. Every mechanism is standard Android
+platform behaviour and works on a stock Pixel running Android 15 today,
+verified end-to-end on the emulator.
+
+**Will it work if you publish to the Play Store?** Mostly, but the
+review will challenge two things, and one of them might force a code
+change:
+
+1. **`foregroundServiceType="microphone"` declaration.** Required, fine,
+   but you must complete the Foreground Service Use Case form in the
+   Play Console and pick a documented justification (e.g. "Continue
+   user-initiated audio capture"). Baby/sleep monitoring fits this.
+
+2. **`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission.** This is the
+   one Google scrutinises. The
+   [Play Store policy](https://support.google.com/googleplay/android-developer/answer/9888170)
+   restricts it to a short list of acceptable use cases: alarms, timers,
+   sleep tracking, fitness sessions, accessibility, VPNs, communication
+   apps, and a few more. Continuous baby/sleep audio monitoring can
+   reasonably be argued under "sleep tracking" or as an essential
+   monitoring tool, but a reviewer may push back. If they reject:
+   remove the permission and the "Disable battery optimization" button.
+   Recording itself still works — the FGS is exempt from Doze for its
+   own work — only uploads during deep idle become bursty (they catch
+   up when the device wakes).
+
+3. **Privacy obligations.** Recording audio counts as collecting
+   personal data. The Play Console will require a privacy policy URL
+   plus a Data Safety declaration covering: audio is recorded, the
+   `ANDROID_ID` is sent as part of the filename, recordings are
+   transmitted to a third-party server (the configured `file_upload_url`).
+   For a research-only deployment this is straightforward; for a
+   consumer release it needs explicit user consent in-app.
+
+4. **Target API.** Already covers it: `targetSdk 35`. Play Store
+   requires apps targeting the latest stable API one year after
+   release; Android 15 was August 2024, so this is fine through 2026.
+
+**Sideload-only justifications** (already adopted in this repo):
+
+- We deliberately do not bundle a release-signing keystore in the
+  repo. CI publishes a debug-signed APK because that is the right
+  default for a research build distributed via GitHub Releases.
+- The `BatteryLife` lint warning is suppressed with a comment because
+  it targets Play Store apps, not sideloaded research software.
+
+If at some point the app is genuinely going to ship via the Play
+Store, the recommended adjustments are: (a) drop the
+`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` permission and the button,
+(b) add a release signing config and a proper privacy policy, (c) wire
+the recording-upload consent through an in-app onboarding flow.
 
 ## Recording logic
 
