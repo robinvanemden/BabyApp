@@ -5,16 +5,21 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,6 +41,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         status = findViewById(R.id.status)
+
+        // On Android 15+ (targetSdk 35) edge-to-edge is on by default, so the status
+        // and navigation bars draw under the activity. Add the system bar insets to
+        // the root padding so children stay clear of them.
+        val root = findViewById<View>(R.id.root)
+        val basePadding = Rect(root.paddingLeft, root.paddingTop, root.paddingRight, root.paddingBottom)
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.updatePadding(
+                left = basePadding.left + bars.left,
+                top = basePadding.top + bars.top,
+                right = basePadding.right + bars.right,
+                bottom = basePadding.bottom + bars.bottom,
+            )
+            insets
+        }
 
         findViewById<Button>(R.id.start).setOnClickListener { onStartClicked() }
         findViewById<Button>(R.id.battery).setOnClickListener { openBatteryOptimizationSettings() }
