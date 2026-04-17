@@ -4,8 +4,11 @@
 
     <string name="file_upload_url">https://www.robinvanemden.dds.nl/fileupload/upload.php</string>
 
-    <string name="service_running">Service: running</string>
-    <string name="service_stopped">Service: stopped</string>
+    <string name="state_stopped">Stopped</string>
+    <string name="state_listening">Listening</string>
+    <string name="state_recording">Recording</string>
+
+    <string name="btn_battery_done">Battery optimization disabled</string>
 
     <string name="notif_channel_name">Listening</string>
     <string name="notif_channel_desc">Persistent listening notification</string>
@@ -17,6 +20,9 @@
 
     <string name="btn_battery">Disable battery optimization</string>
     <string name="btn_start">Start listening</string>
+    <string name="btn_stop">Stop listening</string>
+
+    <string name="notif_action_stop">Stop</string>
 
     <string name="permission_denied">Permission denied. Cannot start listening.</string>
 </resources>

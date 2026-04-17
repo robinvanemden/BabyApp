@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="indicator_stopped">#FF757575</color> <!-- gray -->
+    <color name="indicator_listening">#FF4CAF50</color> <!-- green -->
+    <color name="indicator_recording">#FFE53935</color> <!-- red -->
+</resources>

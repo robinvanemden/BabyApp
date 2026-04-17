@@ -13,7 +13,9 @@ class AmplitudeGate(
 
     enum class Decision { CONTINUE, STOP_AND_KEEP, STOP_AND_DISCARD }
 
-    private var hasRecorded: Boolean = false
+    /** True after at least one above-threshold sample in the current recording cycle. */
+    var hasRecorded: Boolean = false
+        private set
     private var silentTicks: Int = 0
 
     fun reset() {

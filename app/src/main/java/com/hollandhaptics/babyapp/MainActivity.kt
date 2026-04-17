@@ -5,13 +5,15 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,10 +22,23 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var indicator: View
     private lateinit var status: TextView
+    private lateinit var toggle: MaterialButton
+    private lateinit var battery: MaterialButton
+
+    private val uiHandler = Handler(Looper.getMainLooper())
+
+    private val refreshRunnable = object : Runnable {
+        override fun run() {
+            refresh()
+            uiHandler.postDelayed(this, REFRESH_INTERVAL_MS)
+        }
+    }
 
     private val requestPermissions = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -34,17 +49,20 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, R.string.permission_denied, Toast.LENGTH_LONG).show()
         }
-        refreshStatus()
+        refresh()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        status = findViewById(R.id.status)
 
-        // On Android 15+ (targetSdk 35) edge-to-edge is on by default, so the status
-        // and navigation bars draw under the activity. Add the system bar insets to
-        // the root padding so children stay clear of them.
+        indicator = findViewById(R.id.indicator)
+        status = findViewById(R.id.status)
+        toggle = findViewById(R.id.toggle)
+        battery = findViewById(R.id.battery)
+
+        // Edge-to-edge inset handling: add system bar insets to the existing root padding
+        // (don't use fitsSystemWindows, which would replace it).
         val root = findViewById<View>(R.id.root)
         val basePadding = Rect(root.paddingLeft, root.paddingTop, root.paddingRight, root.paddingBottom)
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
@@ -58,24 +76,34 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        findViewById<Button>(R.id.start).setOnClickListener { onStartClicked() }
-        findViewById<Button>(R.id.battery).setOnClickListener { openBatteryOptimizationSettings() }
+        toggle.setOnClickListener { onToggleClicked() }
+        battery.setOnClickListener { openBatteryOptimizationSettings() }
 
-        // Auto-start if launched from the boot-resume notification, or always-on intent.
-        if (intent?.action == ACTION_RESUME) onStartClicked()
+        if (intent?.action == ACTION_RESUME) onToggleClicked()
     }
 
     override fun onResume() {
         super.onResume()
-        refreshStatus()
+        uiHandler.post(refreshRunnable)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        uiHandler.removeCallbacks(refreshRunnable)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.action == ACTION_RESUME) onStartClicked()
+        if (intent.action == ACTION_RESUME && !isBabyServiceRunning()) onToggleClicked()
     }
 
-    private fun onStartClicked() {
+    private fun onToggleClicked() {
+        if (isBabyServiceRunning()) {
+            stopBabyService()
+            // Give the framework a moment to tear the service down, then refresh.
+            uiHandler.postDelayed({ refresh() }, 200)
+            return
+        }
         val missing = REQUIRED_PERMISSIONS.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
@@ -84,22 +112,44 @@ class MainActivity : AppCompatActivity() {
             return
         }
         startBabyService()
-        refreshStatus()
+        uiHandler.postDelayed({ refresh() }, 200)
     }
 
     private fun startBabyService() {
-        val intent = Intent(this, BabyService::class.java)
-        ContextCompat.startForegroundService(this, intent)
+        ContextCompat.startForegroundService(this, Intent(this, BabyService::class.java))
     }
 
-    private fun refreshStatus() {
-        status.setText(if (isBabyServiceRunning()) R.string.service_running else R.string.service_stopped)
+    private fun stopBabyService() {
+        startService(Intent(this, BabyService::class.java).setAction(BabyService.ACTION_STOP))
+    }
+
+    private fun refresh() {
+        val running = isBabyServiceRunning()
+        val state = if (running) BabyService.state else BabyService.Companion.State.STOPPED
+
+        // Indicator color + label
+        val (colorRes, labelRes) = when (state) {
+            BabyService.Companion.State.STOPPED -> R.color.indicator_stopped to R.string.state_stopped
+            BabyService.Companion.State.LISTENING -> R.color.indicator_listening to R.string.state_listening
+            BabyService.Companion.State.RECORDING -> R.color.indicator_recording to R.string.state_recording
+        }
+        indicator.backgroundTintList =
+            ColorStateList.valueOf(ContextCompat.getColor(this, colorRes))
+        status.setText(labelRes)
+
+        // Toggle button
+        toggle.setText(if (running) R.string.btn_stop else R.string.btn_start)
+
+        // Battery button
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        val exempt = pm.isIgnoringBatteryOptimizations(packageName)
+        battery.isEnabled = !exempt
+        battery.setText(if (exempt) R.string.btn_battery_done else R.string.btn_battery)
     }
 
     @Suppress("DEPRECATION")
     private fun isBabyServiceRunning(): Boolean {
-        // getRunningServices() only returns this app's own services on modern Android,
-        // which is exactly what we need.
+        // getRunningServices() returns this app's own services on modern Android.
         val am = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val name = BabyService::class.java.name
         return am.getRunningServices(Int.MAX_VALUE).any { it.service.className == name }
@@ -108,7 +158,7 @@ class MainActivity : AppCompatActivity() {
     private fun openBatteryOptimizationSettings() {
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         if (pm.isIgnoringBatteryOptimizations(packageName)) {
-            Toast.makeText(this, "Already exempt", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.btn_battery_done, Toast.LENGTH_SHORT).show()
             return
         }
         // Open the system list and let the user opt this app out of optimizations.
@@ -119,6 +169,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val ACTION_RESUME = "com.hollandhaptics.babyapp.action.RESUME_LISTENING"
+        private const val REFRESH_INTERVAL_MS = 500L
 
         private val REQUIRED_PERMISSIONS: Array<String> = buildList {
             add(Manifest.permission.RECORD_AUDIO)

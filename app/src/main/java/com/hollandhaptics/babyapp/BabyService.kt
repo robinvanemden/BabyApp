@@ -63,6 +63,7 @@ class BabyService : Service() {
         recordingsDir = File(getExternalFilesDir(null), "recordings").apply { mkdirs() }
         deviceId = readDeviceId()
         uploader = Uploader(getString(R.string.file_upload_url))
+        state = State.LISTENING
     }
 
     @android.annotation.SuppressLint("HardwareIds")
@@ -72,7 +73,12 @@ class BabyService : Service() {
         Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand")
+        Log.d(TAG, "onStartCommand action=${intent?.action}")
+        if (intent?.action == ACTION_STOP) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
         startForegroundCompat()
         if (recorder == null) {
             startNewRecording()
@@ -88,6 +94,7 @@ class BabyService : Service() {
         mainHandler.removeCallbacks(tickRunnable)
         stopAndReleaseRecorder(keepFile = false)
         ioExecutor.shutdown()
+        state = State.STOPPED
         super.onDestroy()
     }
 
@@ -106,6 +113,7 @@ class BabyService : Service() {
                 startNewRecording()
             }
         }
+        state = if (gate.hasRecorded) State.RECORDING else State.LISTENING
     }
 
     private fun startNewRecording() {
@@ -169,12 +177,18 @@ class BabyService : Service() {
             this, 0, tapIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
+        val stopIntent = Intent(this, BabyService::class.java).setAction(ACTION_STOP)
+        val stop = PendingIntent.getService(
+            this, 1, stopIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
         val notif: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(getString(R.string.notif_title))
             .setContentText(getString(R.string.notif_text))
             .setOngoing(true)
             .setContentIntent(tap)
+            .addAction(0, getString(R.string.notif_action_stop), stop)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -205,8 +219,16 @@ class BabyService : Service() {
         private const val TAG = "BabyService"
         const val CHANNEL_ID = "baby_app_listening"
         const val NOTIFICATION_ID = 1001
+        const val ACTION_STOP = "com.hollandhaptics.babyapp.action.STOP"
         private const val TICK_INTERVAL_MS = 1000L
         private const val AMPLITUDE_THRESHOLD = 1000
         private const val SILENCE_TICKS_BEFORE_STOP = 60
+
+        enum class State { STOPPED, LISTENING, RECORDING }
+
+        /** Volatile snapshot of the service's current state. Written only by BabyService;
+         *  read by MainActivity. */
+        @Volatile
+        var state: State = State.STOPPED
     }
 }

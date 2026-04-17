@@ -11,8 +11,8 @@ android {
         applicationId = "com.hollandhaptics.babyapp"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "2.0.1"
+        versionCode = 4
+        versionName = "2.1.0"
     }
 
     buildTypes {
@@ -42,6 +42,7 @@ dependencies {
     // compileSdk 35 + AGP 8.7. Bumping further requires compileSdk 36 + AGP 8.9+.
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("com.google.android.material:material:1.12.0")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     testImplementation("junit:junit:4.13.2")

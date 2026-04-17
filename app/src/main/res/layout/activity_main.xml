@@ -1,30 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="24dp">
 
-    <TextView
-        android:id="@+id/status"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/service_stopped" />
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:contentPadding="20dp">
 
-    <Button
-        android:id="@+id/start"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:id="@+id/indicator"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:background="@drawable/indicator_dot"
+                    android:backgroundTint="@color/indicator_stopped" />
+
+                <TextView
+                    android:id="@+id/status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/state_stopped"
+                    android:textAppearance="?attr/textAppearanceHeadlineSmall" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/toggle"
+        style="@style/Widget.Material3.Button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/btn_start" />
+        android:layout_marginTop="24dp"
+        android:text="@string/btn_start"
+        app:cornerRadius="16dp"
+        app:icon="@android:drawable/ic_btn_speak_now"
+        app:iconGravity="textStart" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/battery"
+        style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/btn_battery" />
+        android:layout_marginTop="12dp"
+        android:text="@string/btn_battery"
+        app:cornerRadius="16dp"
+        app:icon="@android:drawable/ic_lock_idle_low_battery"
+        app:iconGravity="textStart" />
 
 </LinearLayout>
