@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -155,16 +156,27 @@ class MainActivity : AppCompatActivity() {
         return am.getRunningServices(Int.MAX_VALUE).any { it.service.className == name }
     }
 
+    @android.annotation.SuppressLint("BatteryLife")
     private fun openBatteryOptimizationSettings() {
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         if (pm.isIgnoringBatteryOptimizations(packageName)) {
             Toast.makeText(this, R.string.btn_battery_done, Toast.LENGTH_SHORT).show()
             return
         }
-        // Open the system list and let the user opt this app out of optimizations.
-        // We deliberately do not request the auto-grant permission, which Play Store
-        // rejects for general-purpose use.
-        startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        // Open the direct "Allow Baby App to ignore battery optimizations?" system
+        // dialog. This is the right UX for our app — the alternative
+        // ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS intent opens a list that
+        // defaults to "Not optimized" on most devices, so Baby App is hidden until
+        // the user finds and toggles a filter dropdown. The BatteryLife lint
+        // warning targets Play Store apps; this is sideloaded research software.
+        val direct = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+            .setData(Uri.parse("package:$packageName"))
+        try {
+            startActivity(direct)
+        } catch (_: Throwable) {
+            // Fallback for OEMs that don't honour the direct intent.
+            startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+        }
     }
 
     companion object {
