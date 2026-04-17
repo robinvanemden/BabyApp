@@ -9,6 +9,19 @@ It was originally built in 2016 for sleep / thermoregulation research. This
 revision modernizes the Android side to target SDK 35 (Android 15) while
 keeping the always-running design.
 
+## Download
+
+- **Latest release** (always points to the newest version):
+  [`app-debug.apk`](https://github.com/robinvanemden/BabyApp/releases/latest/download/app-debug.apk)
+- **All releases:**
+  [github.com/robinvanemden/BabyApp/releases](https://github.com/robinvanemden/BabyApp/releases)
+- **Pinned to v2.0.0:**
+  [`app-debug.apk`](https://github.com/robinvanemden/BabyApp/releases/download/v2.0.0/app-debug.apk)
+
+This is a debug-signed APK suitable for sideloading. Enable
+*Settings → Apps → Special access → Install unknown apps* for your
+browser or file manager, then open the downloaded `.apk` to install.
+
 ## How "always running" works
 
 Modern Android does not allow truly unkillable background execution. The
