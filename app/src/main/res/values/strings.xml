@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Baby App</string>
-    <string name="title_activity_main">MainActivity</string>
 
-    <string name="mysql_url">http://www.robinvanemden.dds.nl/sqlitemysqlsync/insertdata.php</string>
-    <string name="file_upload_url">http://www.robinvanemden.dds.nl/fileupload/upload.php</string>
+    <string name="file_upload_url">https://www.robinvanemden.dds.nl/fileupload/upload.php</string>
 
-    <string name="toast_upload_failed">File Upload Failed.</string>
-    <string name="toast_malformedurlexception">MalformedURLException</string>
-    <string name="toast_exception">Unknown Exception</string>
+    <string name="service_running">Service: running</string>
+    <string name="service_stopped">Service: stopped</string>
 
-    <string name="scan">SCAN</string>
-    <string name="scanning">SCANNING...</string>
-    <string name="disconnect">DISCONNECT</string>
-    <string name="device_name">Device Name</string>
-    <string name="service_running">Service State: Running</string>
+    <string name="notif_channel_name">Listening</string>
+    <string name="notif_channel_desc">Persistent listening notification</string>
+    <string name="notif_title">Baby App listening</string>
+    <string name="notif_text">Monitoring ambient sound</string>
 
+    <string name="boot_notif_title">Baby App stopped at reboot</string>
+    <string name="boot_notif_text">Tap to resume listening</string>
+
+    <string name="btn_battery">Disable battery optimization</string>
+    <string name="btn_start">Start listening</string>
+
+    <string name="permission_denied">Permission denied. Cannot start listening.</string>
 </resources>

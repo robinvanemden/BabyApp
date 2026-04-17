@@ -1,25 +1,23 @@
 <?php
 $target_dir = "upload/";
 $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+$fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
 
-$uploadOk = 1;
-$fileType = pathinfo($target_file, PATHINFO_EXTENSION);
+if ($fileType !== "3gpp") {
+    http_response_code(415);
+    echo "Unsupported file type";
+    exit;
+}
 
-// Check if file already exists
 if (file_exists($target_file)) {
-    $uploadOk = 0;
+    http_response_code(409);
+    echo "Already exists";
+    exit;
 }
 
-// Allow certain file formats (only .3gpp)
-if ($fileType != "3gpp") {
-    $uploadOk = 0;
-}
-
-// Check if $uploadOk isn't set to 0 by an error
-if ($uploadOk == 1 && FALSE) {
-    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        echo "Success";
-    } else {
-        echo "Fail";
-    }
+if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+    echo "Success";
+} else {
+    http_response_code(500);
+    echo "Fail";
 }
