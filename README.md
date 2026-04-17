@@ -15,8 +15,8 @@ keeping the always-running design.
   [`app-debug.apk`](https://github.com/robinvanemden/BabyApp/releases/latest/download/app-debug.apk)
 - **All releases:**
   [github.com/robinvanemden/BabyApp/releases](https://github.com/robinvanemden/BabyApp/releases)
-- **Pinned to v2.0.1:**
-  [`app-debug.apk`](https://github.com/robinvanemden/BabyApp/releases/download/v2.0.1/app-debug.apk)
+- **Pinned to v2.1.0:**
+  [`app-debug.apk`](https://github.com/robinvanemden/BabyApp/releases/download/v2.1.0/app-debug.apk)
 
 This is a debug-signed APK suitable for sideloading. Enable
 *Settings → Apps → Special access → Install unknown apps* for your
