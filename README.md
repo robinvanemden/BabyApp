@@ -11,24 +11,97 @@ keeping the always-running design.
 
 ## How "always running" works
 
-True unkillable background execution is not something modern Android allows
-on purpose. What this app does is the closest the platform offers:
+Modern Android does not allow truly unkillable background execution. The
+OS reserves the right to terminate any process. What this app does is
+combine every documented mechanism the platform offers, so the service
+behaves as "always running" in every realistic scenario except a deliberate
+user action to stop it.
 
-| Layer | Mechanism |
-|-------|-----------|
-| Service type | `BabyService` is a foreground service of type `microphone`. The OS treats microphone-typed FGS as user-essential and will not kill it except under extreme memory pressure. |
-| Restart on kill | `onStartCommand` returns `START_STICKY`. If the service ever is killed, the system restarts it as soon as resources are available. |
-| User visibility | A persistent low-importance notification is required for any FGS, and is part of the contract. |
-| CPU wake | Microphone capture itself keeps the CPU partially awake; no `WakeLock` required. |
-| Doze / App Standby | Foreground services are exempt from Doze for the work they do. The "Disable battery optimization" button in `MainActivity` opens the system screen so the user can also exempt the whole app from background restrictions. |
-| Reboot | `BootReceiver` listens for `BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`, and `MY_PACKAGE_REPLACED`. It posts a high-importance "tap to resume" notification. Android 14+ forbids launching a microphone FGS directly from `BOOT_COMPLETED`, but a notification interaction is one of the documented while-in-use exemptions, so the FGS is allowed to start once the user taps the notification. |
-| First launch | `MainActivity` walks the runtime permission flow (`RECORD_AUDIO`, `POST_NOTIFICATIONS`) before starting the service. |
+### The seven mechanisms, in detail
 
-What can still stop it (by Android design, no app can prevent these):
+**1. Microphone-typed foreground service**
 
-- The user "Force stops" the app from system Settings.
-- The user toggles "Don't allow background activity".
-- The OEM has aggressive task-killer behavior (some Chinese OEM ROMs do).
+`BabyService` declares `android:foregroundServiceType="microphone"` in
+`AndroidManifest.xml` and calls `startForeground(id, notif, FOREGROUND_SERVICE_TYPE_MICROPHONE)`
+on entry. Microphone FGS is treated by Android as user-essential. Unlike
+`dataSync` (capped at 6 h/day on Android 15) or `shortService` (3 min hard
+limit), `microphone` has **no platform-imposed time limit** and is the very
+last category the OS will reclaim under memory pressure. See
+`BabyService.kt` (`startForegroundCompat`).
+
+**2. `START_STICKY` restart contract**
+
+`onStartCommand` returns `Service.START_STICKY`. If the OS ever does kill
+the process — for memory pressure, OEM cleanup, etc. — Android schedules
+the service for restart as soon as resources free up. The service will be
+re-created with a `null` intent and pick up where it left off. Note this
+only fires for **OS-initiated** kills, not for a user "Force stop", which
+intentionally suspends `START_STICKY` until the user next interacts with
+the app — by Android design.
+
+**3. Persistent low-importance notification**
+
+Every FGS is required to show a user-visible notification. We post one to
+the `baby_app_listening` channel at `IMPORTANCE_LOW` (silent, no sound).
+The notification's `ContentIntent` re-opens `MainActivity`, so the user
+always has a path back into the app.
+
+**4. Microphone capture keeps the CPU awake**
+
+Active mic capture is enough to prevent the CPU from entering deep idle.
+We do **not** acquire a `WakeLock`, which keeps battery use down and
+avoids triggering the Play Store's wakelock policy.
+
+**5. Doze / App Standby exemption**
+
+Foreground services are automatically exempt from Doze for the work they
+do; the recording loop is unaffected. For network uploads during Doze,
+the "Disable battery optimization" button in `MainActivity` deep-links
+the user to `Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS`, where
+they can opt the whole app out of background restrictions.
+
+**6. Boot resumption (`BootReceiver`)**
+
+The `BootReceiver` listens for three intents:
+
+- `BOOT_COMPLETED` — normal post-reboot.
+- `LOCKED_BOOT_COMPLETED` — direct-boot phase, *before* the user
+  enters their PIN. Posting a notification works in this phase even
+  though credential-encrypted user data is unavailable.
+- `MY_PACKAGE_REPLACED` — fired after the app itself is updated, so
+  the resume prompt comes back without the user having to launch the
+  Play Store.
+
+In all three cases, the receiver posts a high-importance notification
+("Tap to resume listening"). It does **not** start the FGS directly,
+because Android 14+ forbids launching a microphone FGS from
+`BOOT_COMPLETED` (the `RECORD_AUDIO` permission is "while-in-use" and
+the app is considered backgrounded at boot). A notification interaction
+is one of the documented while-in-use exemptions, so tapping the
+notification → `MainActivity` → `startForegroundService(BabyService)`
+is allowed and resumes recording with one tap.
+
+**7. Runtime permission flow on first launch**
+
+`MainActivity` walks `RECORD_AUDIO` and (on Android 13+) `POST_NOTIFICATIONS`
+through the standard `ActivityResultContracts.RequestMultiplePermissions`
+contract before starting the FGS. If any permission is denied, the service
+is not started and the user sees a toast.
+
+### What can still stop it
+
+By Android design, no app can override these — and trying to is what gets
+apps rejected from the Play Store:
+
+- **User taps "Force stop"** in system Settings. `START_STICKY` is
+  intentionally not honoured after this.
+- **User toggles "Don't allow background activity"** for the app.
+- **Aggressive OEM task killers** on some Chinese OEM ROMs
+  (Xiaomi MIUI, Huawei EMUI, OPPO ColorOS) ignore Android's FGS contract
+  entirely. There is no portable workaround beyond asking the user to
+  whitelist the app on those vendors' settings.
+- **Disk full** — the recording loop pauses uploads when free space drops
+  below 10 % until cleanup catches up.
 
 ## Recording logic
 
